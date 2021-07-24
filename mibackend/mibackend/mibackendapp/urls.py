@@ -19,6 +19,17 @@ urlpatterns = [
     path('subcategoria/', views.SubcategoriaView.as_view()),
     path('bodega/<str:pk>/', views.BodegaViewSet.as_view()),
     path('bodega/', views.BodegaView.as_view()),
+    path('item/<str:pk>/', views.ItemViewSet.as_view()),
+    path('item/', views.ItemView.as_view()),
+    path('img-item/<str:pk>/', views.ImagenItemViewSet.as_view()),
+    path('img-item/', views.ImagenItemView.as_view()),
+    path('estado/<str:pk>/', views.EstadoViewSet.as_view()),
+    path('estado/', views.EstadoView.as_view()),
+
+    path('itemsByUser/<str:id>/', views.getItemByUser.as_view()),
+    path('subcatByCat/<str:id>/', views.getSubcategoriesByCat.as_view()),
+    path('most-recent/', views.getMostRecentProducts.as_view()),
+    path('productsByCat/<str:pk>/', views.getProductsByCategory.as_view()),
 ]
 
 

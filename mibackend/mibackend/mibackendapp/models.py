@@ -84,6 +84,15 @@ class User(AbstractBaseUser):
     def __str__(self):
         return "{}".format(self.email)
 
+    def has_perm(self, perm, obj = None):
+        return True
+
+    def has_module_perms(self, app_label):
+        return True
+
+    @property
+    def is_staff(self):
+        return self.staff
 
 class Categoria(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -93,26 +102,28 @@ class Categoria(models.Model):
 class Subcategoria(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     nombre = models.CharField(max_length=30)
-    categoria = models.ForeignKey(
-        Categoria, on_delete=models.PROTECT, null=True, blank=True)
+    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT, null=True, blank=True)
 
 
 class Estado(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     estado = models.CharField(max_length=20)
-    date_updated = models.DateField()
+    date_updated = models.DateField(auto_now=True)
 
 class Item(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    estado = models.ForeignKey(Estado, on_delete=models.PROTECT)
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    titulo = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=250)
     cantidad = models.IntegerField()
     propietario = models.ForeignKey(User, on_delete=models.PROTECT)
+    entrega = models.CharField(max_length=30)
+    creditos = models.IntegerField(default=0)
 
 class ImagenItem(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    imagen = models.FileField(upload_to='items', max_length=250, null=True, blank=True)
-    item = models.ForeignKey(Item, on_delete=models.PROTECT)
+    imagen = models.ImageField(upload_to='items', max_length=250, null=True, blank=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
 
 class Bodega(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -137,10 +148,11 @@ class Producto(models.Model):
     dimensiones = models.CharField(max_length=50)
     material = models.CharField(max_length=100)
     disponible = models.BooleanField(default=True)
+    titulo = models.CharField(max_length=50)
 
 class ImagenProducto(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    imagen = models.FileField(upload_to='producto', max_length=250, null=True, blank=True)
+    imagen = models.ImageField(upload_to='producto', max_length=250, null=True, blank=True)
     producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
 
 class AdminItem(models.Model):
@@ -155,7 +167,7 @@ class AdminProducto(models.Model):
 
 class CarroCompras(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    usuario = models.ForeignKey(User, on_delete=models.PROTECT)
+    usuario = models.OneToOneField(User, on_delete=models.PROTECT, unique=True)
     subtotal = models.DecimalField(max_digits=8, decimal_places=2)
     totalProduct = models.IntegerField()
     estado = models.CharField(max_length=20)
