@@ -34,6 +34,7 @@ urlpatterns = [
     path('subcatByCat/<str:id>/', views.getSubcategoriesByCat.as_view()),
     path('most-recent/', views.getMostRecentProducts.as_view()),
     path('productsByCat/<str:pk>/', views.getProductsByCategory.as_view()),
+    path('productsBySubcat/<str:pk>/', views.getProductsBySubCategory.as_view()),
 ]
 
 

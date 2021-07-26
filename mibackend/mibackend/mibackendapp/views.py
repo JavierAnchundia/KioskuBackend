@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .models import  * 
@@ -10,6 +9,8 @@ import base64
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+
 # Create your views here.
 
 class CiudadView(APIView):
@@ -477,6 +478,17 @@ class ItemViewSet(APIView):
 
     def delete(self, request, pk, format=None):
         itemObj = self.get_object(pk)
+        imagenItem = ImagenItem.objects.filter(item=pk)
+        serializer = ImagenItemSerializer(imagenItem, many=True)
+        print(serializer)
+        for ser in serializer.data:
+            print(ser)
+            if(ser['imagen'] is not None):
+                path = ser['imagen'][7:]
+                print(path)
+                default_storage.delete(path)
+            else:
+                return Response(status=status.HTTP_200_OK)
         itemObj.delete()
         return Response(status=status.HTTP_200_OK)
 
@@ -535,6 +547,12 @@ class ImagenItemViewSet(APIView):
 
     def delete(self, request, pk, format=None):
         itemObj = self.get_object(pk)
+        serializer = ImagenItemSerializer(itemObj)
+        if(serializer['imagen'].value is not None):
+            path = serializer['imagen'].value[7:]
+            default_storage.delete(path)
+        else:
+            return Response(status=status.HTTP_200_OK)
         itemObj.delete()
         return Response(status=status.HTTP_200_OK)
 
@@ -567,3 +585,8 @@ class getProductsByCategory(APIView):
         serializer = ProductoSerializer(prod, many=True)
         return HttpResponse(json.dumps([serializer.data], cls=DjangoJSONEncoder))
  
+class getProductsBySubCategory(APIView):
+    def get(self, request, pk):
+        prod = Producto.objects.filter(subcategoria=pk).order_by('-pk')
+        serializer = ProductoSerializer(prod, many=True)
+        return HttpResponse(json.dumps([serializer.data], cls=DjangoJSONEncoder))
