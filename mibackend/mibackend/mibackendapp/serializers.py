@@ -13,7 +13,7 @@ class ProvinciaSerializer(serializers.ModelSerializer):
 
 class MembresiaSerializer(serializers.ModelSerializer):
     class Meta:
-        models = Membresia
+        model = Membresia
         fields = '__all__'
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -47,6 +47,7 @@ class SubcategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subcategoria
         fields = '__all__'
+        fields = ('id', 'nombre')
 
 class BodegaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -123,4 +124,11 @@ class AdminProductoSerializer(serializers.ModelSerializer):
 class AdminItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdminItem
+        fields = '__all__'
+
+###
+class ItemFullSerializer(serializers.ModelSerializer):
+    estado = EstadoSerializer(required=False)
+    class Meta:
+        model = Item
         fields = '__all__'
