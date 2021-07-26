@@ -94,7 +94,7 @@ class Subcategoria(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     nombre = models.CharField(max_length=30)
     categoria = models.ForeignKey(
-        Categoria, on_delete=models.PROTECT, null=True, blank=True)
+        Categoria, on_delete=models.CASCADE, null=True, blank=True)
 
 
 class Estado(models.Model):
@@ -116,6 +116,7 @@ class ImagenItem(models.Model):
 
 class Bodega(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
+    nombre = models.CharField(max_length=100)
     direccion = models.CharField(max_length=100)
     ciudad = models.ForeignKey(Ciudad, on_delete=models.PROTECT)
 

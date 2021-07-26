@@ -274,6 +274,19 @@ class SubcategoriaViewSet(APIView):
         subcatObj.delete()
         return Response(status=status.HTTP_200_OK)
 
+class SubcategoriaCategoriaView(APIView):
+    # permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return Subcategoria.objects.filter(categoria_id=pk)
+        except Subcategoria.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        subcatObj = self.get_object(pk)
+        serializer = SubcategoriaSerializer(subcatObj, many=True)
+        return Response(serializer.data)
+
 class BodegaView(APIView):
     #permission_classes = (IsAuthenticated,)
     def get(self, request, format=None):
@@ -287,6 +300,20 @@ class BodegaView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class BodegaCiudadView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        bodeObj = Bodega.objects.all()
+        serializer = BodegaCiudadSerializer(bodeObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = BodegaCiudadSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
 
 
 class BodegaViewSet(APIView):
@@ -314,3 +341,16 @@ class BodegaViewSet(APIView):
         bodeObj = self.get_object(pk)
         bodeObj.delete()
         return Response(status=status.HTTP_200_OK)
+
+class BodegaCiudadViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return Bodega.objects.get(id=pk)
+        except Bodega.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        bodeObj = self.get_object(pk)
+        serializer = BodegaCiudadSerializer(bodeObj)
+        return Response(serializer.data)

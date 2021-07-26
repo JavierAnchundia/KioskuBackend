@@ -45,13 +45,20 @@ class CategoriaSerializer(serializers.ModelSerializer):
 
 class SubcategoriaSerializer(serializers.ModelSerializer):
     class Meta:
-        models = Subcategoria
+        model = Subcategoria
         fields = '__all__'
 
 class BodegaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bodega
         fields = '__all__'
+
+class BodegaCiudadSerializer(serializers.ModelSerializer):
+    ciudad_name = serializers.CharField(source='ciudad.nombre')
+
+    class Meta:
+        model = Bodega
+        fields = ('id', 'nombre', 'direccion', 'ciudad', 'ciudad_name')
 
 class CarroComprasSerializer(serializers.ModelSerializer):
     class Meta:

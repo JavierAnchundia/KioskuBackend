@@ -19,6 +19,10 @@ urlpatterns = [
     path('subcategoria/', views.SubcategoriaView.as_view()),
     path('bodega/<str:pk>/', views.BodegaViewSet.as_view()),
     path('bodega/', views.BodegaView.as_view()),
+    path('subcategoriacategoria/<str:pk>/', views.SubcategoriaCategoriaView.as_view()),
+    path('bodegasciudad/', views.BodegaCiudadView.as_view()),
+    path('bodegasciudad/<str:pk>/', views.BodegaCiudadViewSet.as_view()),
+
 ]
 
 
