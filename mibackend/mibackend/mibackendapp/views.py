@@ -4,12 +4,13 @@ from .models import  *
 from .serializers import *
 from rest_framework.response import Response
 from rest_framework import status
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse
 import base64
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -146,13 +147,16 @@ class UsuarioViewGet(APIView):
             return User.objects.get(email=email)
         except User.DoesNotExist:
             raise Http404
+
     def get(self, request, email, format=None):
         usuarioObj = self.get_object(email)
-        serializer = UserProfileSerializer(usuarioObj)
+        serializer = UserFullSerializer(usuarioObj)
         return Response(serializer.data)
+
     def put(self, request, email, format = None):
+        
         usuarioObj = self.get_object(email)
-        serializer = UserProfileSerializer(usuarioObj, data=request.data, partial=True)
+        serializer = UserFullSerializer(usuarioObj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             if 'password' in request.data:
@@ -171,9 +175,10 @@ class UsuarioView(APIView):
             raise Http404
     def get(self, request, pk, format=None):
         usuarioObj = self.get_object(pk)
-        serializer = UserProfileSerializer(usuarioObj)
+        serializer = UserFullSerializer(usuarioObj)
         return Response(serializer.data)
     def put(self, request, pk, format = None):
+        print(request.data)
         usuarioObj = self.get_object(pk)
         serializer = UserProfileSerializer(usuarioObj, data=request.data, partial=True)
         if serializer.is_valid():
@@ -508,12 +513,10 @@ class ItemViewSet(APIView):
         itemObj = self.get_object(pk)
         imagenItem = ImagenItem.objects.filter(item=pk)
         serializer = ImagenItemSerializer(imagenItem, many=True)
-        print(serializer)
         for ser in serializer.data:
             print(ser)
             if(ser['imagen'] is not None):
                 path = ser['imagen'][7:]
-                print(path)
                 default_storage.delete(path)
             else:
                 return Response(status=status.HTTP_200_OK)
@@ -523,7 +526,6 @@ class ItemViewSet(APIView):
 # Funciones auxiliares
 def convertImages(request):
     images = []
-    print(len(request.data))
     if len(request.data['imagesList']) >= 1:
         for req in request.data['imagesList']:
             if(req['imagen']):
@@ -549,7 +551,10 @@ class ImagenItemView(APIView):
         serializer = ImagenItemSerializer(data=data, many=True)
         if serializer.is_valid():
             serializer.save()
+            Item.objects.filter(id=serializer.data[0]['item']).update(thumbnail=serializer.data[0]['imagen'])
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ImagenItemViewSet(APIView):
@@ -584,16 +589,156 @@ class ImagenItemViewSet(APIView):
         itemObj.delete()
         return Response(status=status.HTTP_200_OK)
 
+class ProductoView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        prodObj = Producto.objects.all()
+        serializer = ProductoSerializer(prodObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = ProductoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ProductoViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return Producto.objects.get(id=pk)
+        except Producto.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        prodObj = self.get_object(pk)
+        serializer = ProductoFullSerializer(prodObj)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        prodObj = self.get_object(pk)
+        serializer = ProductoSerializer(prodObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        prodObj = self.get_object(pk)
+        imagenProd = ImagenProducto.objects.filter(producto=pk)
+        serializer = ImagenProductoSerializer(imagenProd, many=True)
+        for ser in serializer.data:
+            if(ser['imagen'] is not None):
+                path = ser['imagen'][7:]
+                print(path)
+                default_storage.delete(path)
+            else:
+                return Response(status=status.HTTP_200_OK)
+        prodObj.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+class ImagenProductoView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        prodObj = ImagenProducto.objects.all()
+        serializer = ImagenProductoSerializer(prodObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        data = convertImages(request)
+        serializer = ImagenProductoSerializer(data=data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            Producto.objects.filter(id=serializer.data[0]['producto']).update(thumbnail=serializer.data[0]['imagen'])
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ImagenProductoViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return ImagenProducto.objects.filter(producto=pk)
+        except ImagenProducto.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        prodObj = self.get_object(pk)
+        serializer = ImagenProductoSerializer(prodObj, many=True)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        prodObj = self.get_object(pk)
+        serializer = ImagenProductoSerializer(prodObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        prodObj = self.get_object(pk)
+        serializer = ImagenProductoSerializer(prodObj)
+        if(serializer['imagen'].value is not None):
+            path = serializer['imagen'].value[7:]
+            default_storage.delete(path)
+        else:
+            return Response(status=status.HTTP_200_OK)
+        prodObj.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+class MembresiaView(APIView):
+    def get(self, request, format=None):
+        memObj = Membresia.objects.all()
+        serializer = MembresiaSerializer(memObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = MembresiaSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class MembresiaViewSet(APIView):
+    def get_object(self, pk):
+        try:
+            return Membresia.get(id=pk)
+        except Membresia.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        memObj = self.get_object(pk)
+        serializer = MembresiaSerializer(memObj, many=True)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        memObj = self.get_object(pk)
+        serializer = MembresiaSerializer(memObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        memObj = self.get_object(pk)
+        memObj.delete()
+        return Response(status=status.HTTP_200_OK)
 
 ### VISTAS ESPECIALES ##
 
 class getItemByUser(APIView):
     def get(self, request, id):
-        items = Item.objects.filter(propietario=id)
-        imagenItem = ImagenItem.objects.filter(item__propietario=id)
-        serializer = ImagenItemSerializer(imagenItem, many=True)
-        itemSer = ItemFullSerializer(items, many=True)
-        return HttpResponse(json.dumps([serializer.data, itemSer.data], cls=DjangoJSONEncoder))
+        
+        items = Item.objects.filter(propietario=id).order_by('-id')
+        page_number = request.GET.get('page', 1)
+        page_size = int(request.GET.get('size', 2))
+        paginator = Paginator(items , page_size)
+        serializer = ItemFullSerializer(paginator.page(page_number) , many=True, context={'request':request})
+        response = Response([serializer.data, len(items)], status=status.HTTP_200_OK)
+        return response
+
 
 class getSubcategoriesByCat(APIView):
     def get(self, request, id):
@@ -603,18 +748,58 @@ class getSubcategoriesByCat(APIView):
 
 class getMostRecentProducts(APIView):
     def get(self, request):
-        prod = Producto.objects.all().order_by('-pk')[:30]
-        serializer = ProductoSerializer(prod, many=True)
-        return HttpResponse(json.dumps([serializer.data], cls=DjangoJSONEncoder))
+        prod = Producto.objects.all().order_by('-id')[:30]
+        serializer = ProductoFullSerializer(prod, many=True)
+        imagen = ImagenProducto.objects.all()
+        imgSerializer = ImagenProductoSerializer(imagen, many=True)
+        return HttpResponse(json.dumps([serializer.data, imgSerializer.data], cls=DjangoJSONEncoder))
 
 class getProductsByCategory(APIView):
-    def get(self, request, pk):
-        prod = Producto.objects.filter(categoria=pk).order_by('-pk')
+    def get(self, request, id):
+        prod = Producto.objects.filter(categoria=id).order_by('-id')
+        imagen = ImagenProducto.objects.filter(producto__categoria=id)
+        imgSerializer = ImagenProductoSerializer(imagen, many=True)
         serializer = ProductoSerializer(prod, many=True)
-        return HttpResponse(json.dumps([serializer.data], cls=DjangoJSONEncoder))
+        return HttpResponse(json.dumps([serializer.data, imgSerializer.data], cls=DjangoJSONEncoder))
  
 class getProductsBySubCategory(APIView):
     def get(self, request, pk):
         prod = Producto.objects.filter(subcategoria=pk).order_by('-pk')
+        imagenItem = ImagenProducto.objects.filter(producto__subcategoria=pk)
+        imgSerializer = ImagenProductoSerializer(imagenItem, many=True)
         serializer = ProductoSerializer(prod, many=True)
-        return HttpResponse(json.dumps([serializer.data], cls=DjangoJSONEncoder))
+        return HttpResponse(json.dumps([serializer.data, imgSerializer.data], cls=DjangoJSONEncoder))
+
+
+class createCarroCompras(APIView):
+    def post(self, request, format=None):
+        serializer = ImagenProductoSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class getCarroByUser(APIView):
+    def get(self, request, pk):
+        obj = CarroCompras.get(usuario=pk)
+        serializer = CarroCompras(obj, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class getCitiesByProv(APIView):
+    def get(self, request, pk):
+        obj = Ciudad.objects.filter(provincia=pk)
+        serializer = CiudadSerializer(obj, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class updateCredits(APIView):
+
+    def patch(self, request, pk):
+        print(request.data)
+        model = User.objects.get(id=pk)
+        data = {"saldo": model.saldo + int(request.data['creditos'])}
+        serializer = UserProfileSerializer(model, data=data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
