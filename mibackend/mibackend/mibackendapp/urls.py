@@ -31,6 +31,9 @@ urlpatterns = [
     path('estado/', views.EstadoView.as_view()),
 
     path('itemsByUser/<str:id>/', views.getItemByUser.as_view()),
+    path('itemunassigned/', views.ItemUnassignedView.as_view()),
+    path('adminItem/', views.AdminItemView.as_view()),
+
     path('subcatByCat/<str:id>/', views.getSubcategoriesByCat.as_view()),
     path('most-recent/', views.getMostRecentProducts.as_view()),
     path('productsByCat/<str:pk>/', views.getProductsByCategory.as_view()),

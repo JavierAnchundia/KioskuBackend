@@ -47,7 +47,7 @@ class SubcategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subcategoria
         fields = '__all__'
-        fields = ('id', 'nombre')
+        #fields = ('id', 'nombre')
 
 class BodegaSerializer(serializers.ModelSerializer):
     class Meta:

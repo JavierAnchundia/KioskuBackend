@@ -34,6 +34,7 @@ class UsuarioManager(BaseUserManager):
             rol="final"
         )
         usuario.set_password(password)
+        usuario.staff = True
         usuario.save()
         return usuario
 
@@ -43,7 +44,6 @@ class UsuarioManager(BaseUserManager):
             name=name,
             password=password,
             rol=rol,
-            is_active=True
         )
         usuario.staff = True
         usuario.save()

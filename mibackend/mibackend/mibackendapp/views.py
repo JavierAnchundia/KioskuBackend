@@ -455,6 +455,34 @@ class ItemView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ItemUnassignedView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        itemsUnassigned = Item.objects.exclude(id__in=AdminItem.objects.all())
+        serializer = ItemSerializer(itemsUnassigned, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = ItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AdminItemView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        adminItemObj = AdminItem.objects.all()
+        serializer = AdminItemSerializer(adminItemObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = AdminItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class ItemViewSet(APIView):
     #permission_classes = (IsAuthenticated,)
     def get_object(self, pk):
