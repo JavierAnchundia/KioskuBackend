@@ -19,7 +19,8 @@ class Ciudad(models.Model):
 class Membresia(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     tipo = models.CharField(max_length=20)
-    pct_dscto = models.DecimalField(max_digits=3, decimal_places=2)
+    pct_dscto = models.DecimalField(max_digits=5, decimal_places=2)
+    tarifa = models.DecimalField(max_digits=5, decimal_places=2)
 
 # Modelo de usuarios
 
@@ -69,7 +70,7 @@ class User(AbstractBaseUser):
     staff = models.BooleanField(default=False)
     rol = models.CharField(max_length=10, choices=rol_choice, default=final)
     address = models.CharField(max_length=100)
-    saldo = models.DecimalField(max_digits=2, decimal_places=2, default=0.00)
+    saldo = models.DecimalField(max_digits=6, decimal_places=2)
     provincia = models.ForeignKey(
         Provincia, on_delete=models.PROTECT, null=True, blank=True)
     ciudad = models.ForeignKey(
@@ -119,6 +120,7 @@ class Item(models.Model):
     propietario = models.ForeignKey(User, on_delete=models.PROTECT)
     entrega = models.CharField(max_length=30)
     creditos = models.IntegerField(default=0)
+    thumbnail = models.CharField(max_length=350, null=True, blank=True)
 
 class ImagenItem(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -150,6 +152,7 @@ class Producto(models.Model):
     material = models.CharField(max_length=100)
     disponible = models.BooleanField(default=True)
     titulo = models.CharField(max_length=50)
+    thumbnail = models.CharField(max_length=350, null=True, blank=True)
 
 class ImagenProducto(models.Model):
     id = models.AutoField(primary_key=True, unique=True)

@@ -26,7 +26,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'password',
             'staff',
             'rol',
-            'is_active'
+            'is_active',
+            'saldo',
+            'address',
+            'provincia',
+            'ciudad'
         )
         extra_kwargs = {'password': {'write_only': True}}
 
@@ -38,6 +42,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+class UserFullSerializer(serializers.ModelSerializer):
+    ciudad = CiudadSerializer(required=False)
+    provincia = ProvinciaSerializer(required=False)
+    membresia = MembresiaSerializer(required=False)
+    class Meta:
+            model = User
+            fields = ('id', 'name', 'email', 'address', 'is_active', 'saldo',
+            'ciudad', 'provincia', 'membresia')
+
+
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categoria
@@ -47,7 +61,6 @@ class SubcategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subcategoria
         fields = '__all__'
-        fields = ('id', 'nombre')
 
 class BodegaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -131,4 +144,10 @@ class ItemFullSerializer(serializers.ModelSerializer):
     estado = EstadoSerializer(required=False)
     class Meta:
         model = Item
+        fields = '__all__'
+
+class ProductoFullSerializer(serializers.ModelSerializer):
+    item= ItemFullSerializer(required=False)
+    class Meta:
+        model = Producto
         fields = '__all__'
