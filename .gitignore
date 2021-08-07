@@ -352,3 +352,4 @@ mibackend/mibackend/mibackendapp/migrations/*
 mibackend/mibackend/static/media/items/*
 mibackend/mibackend/static/media/producto/*
 
+*.json

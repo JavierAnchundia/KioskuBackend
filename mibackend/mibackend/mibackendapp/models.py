@@ -201,3 +201,9 @@ class Factura(models.Model):
     estado = models.CharField(max_length=20)
     carro = models.ForeignKey(CarroCompras, on_delete=models.PROTECT)
 
+class Anuncio(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    dateCreated = models.DateField()
+    banner = models.ImageField(upload_to='banners', max_length=250, null=True, blank=True)
+    titulo = models.CharField(max_length=50)
+    descripcion = models.CharField(max_length=250)

@@ -34,7 +34,8 @@ urlpatterns = [
     path('shopping-cart/<str:pk>/', views.getCarroByUser.as_view()),
     path('membresia/', views.MembresiaView.as_view()),
     path('membresia/<str:pk>/', views.MembresiaViewSet.as_view()),
-
+    path('anuncio/', views.AnuncioView.as_view()),
+    path('anuncio/<str:pk>/', views.AnuncioViewSet.as_view()),
 
     path('itemsByUser/<str:id>/', views.getItemByUser.as_view()),
     path('itemunassigned/', views.ItemUnassignedView.as_view()),
@@ -46,6 +47,7 @@ urlpatterns = [
     path('productsBySubcat/<str:pk>/', views.getProductsBySubCategory.as_view()),
     path('citiesByProv/<str:pk>/', views.getCitiesByProv.as_view()),
     path('update-credits/<str:pk>/', views.updateCredits.as_view()),
+    path('recentItemsCat/', views.getRecentItemsForCat.as_view())
 ]
 
 

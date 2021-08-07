@@ -151,6 +151,12 @@ class ItemFullSerializer(serializers.ModelSerializer):
 
 class ProductoFullSerializer(serializers.ModelSerializer):
     item= ItemFullSerializer(required=False)
+    categoria = CategoriaSerializer(required=False)
     class Meta:
         model = Producto
+        fields = '__all__'
+
+class AnuncioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Anuncio
         fields = '__all__'
