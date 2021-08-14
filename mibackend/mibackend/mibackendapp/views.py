@@ -1,3 +1,4 @@
+from django.db.models.expressions import Subquery
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .models import  * 
@@ -11,6 +12,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
+from django.db.models import Max
 
 # Create your views here.
 
@@ -813,6 +815,45 @@ class MembresiaViewSet(APIView):
         memObj.delete()
         return Response(status=status.HTTP_200_OK)
 
+class AnuncioView(APIView):
+    def get(self, request, format=None):
+        anunObj = Anuncio.objects.all()
+        serializer = AnuncioSerializer(anunObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = AnuncioSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AnuncioViewSet(APIView):
+    def get_object(self, pk):
+        try:
+            return Anuncio.get(id=pk)
+        except Anuncio.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        anunObj = self.get_object(pk)
+        serializer = AnuncioSerializer(anunObj, many=True)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        anunObj = self.get_object(pk)
+        serializer = AnuncioSerializer(anunObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        anunObj = self.get_object(pk)
+        anunObj.delete()
+        return Response(status=status.HTTP_200_OK)
+
+    
 ### VISTAS ESPECIALES ##
 
 class getItemByUser(APIView):
@@ -890,3 +931,15 @@ class updateCredits(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class getRecentItemsForCat(APIView):
+    def get(self, request): 
+        qs = Categoria.objects.annotate(mostrecent=Max('producto__id')).values()
+        categories = list(qs.values('mostrecent'))
+        products = []
+        for id in categories:
+            if(id['mostrecent']!= None):
+                products.append(id['mostrecent'])        
+        qs2 = Producto.objects.filter(id__in=products)
+        serializer = ProductoFullSerializer(qs2, many= True)
+        return Response(serializer.data)
