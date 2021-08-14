@@ -92,6 +92,14 @@ class ItemSerializer(serializers.ModelSerializer):
         model = Item
         fields = '__all__'
 
+class ItemEstadoSerializer(serializers.ModelSerializer):
+    estado_name = serializers.CharField(source='estado.estado')
+
+    class Meta:
+        model = Item
+        fields = ('id', 'titulo', 'descripcion', 'cantidad', 'entrega', 'creditos', 'thumbnail',
+                  'estado', 'propietario', 'estado_name')
+
 class MetodoPagoSerializer(serializers.ModelSerializer):
     class Meta:
         model = MetodoPago

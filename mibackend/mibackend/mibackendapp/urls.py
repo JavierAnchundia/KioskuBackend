@@ -21,6 +21,9 @@ urlpatterns = [
     path('bodega/', views.BodegaView.as_view()),
     path('subcategoriacategoria/<str:pk>/', views.SubcategoriaCategoriaView.as_view()),
     path('bodegasciudad/', views.BodegaCiudadView.as_view()),
+    path('bodega-item/', views.BodegaItemView.as_view()),
+    path('bodega-item/<str:pk>/', views.BodegaItemViewSet.as_view()),
+
     path('bodegasciudad/<str:pk>/', views.BodegaCiudadViewSet.as_view()),
     path('item/<str:pk>/', views.ItemViewSet.as_view()),
     path('item/', views.ItemView.as_view()),
@@ -28,8 +31,11 @@ urlpatterns = [
     path('img-item/', views.ImagenItemView.as_view()),
     path('estado/<str:pk>/', views.EstadoViewSet.as_view()),
     path('estado/', views.EstadoView.as_view()),
+    path('estado-id/<str:estado>/', views.EstadoIdView.as_view()),
     path('producto/<str:pk>/', views.ProductoViewSet.as_view()),
+    path('img-producto/', views.ImagenProductoView.as_view()),
     path('img-producto/<str:pk>/', views.ImagenProductoViewSet.as_view()),
+
     path('shopping-cart/', views.createCarroCompras.as_view()),
     path('shopping-cart/<str:pk>/', views.getCarroByUser.as_view()),
     path('membresia/', views.MembresiaView.as_view()),
@@ -38,6 +44,10 @@ urlpatterns = [
 
     path('itemsByUser/<str:id>/', views.getItemByUser.as_view()),
     path('itemunassigned/', views.ItemUnassignedView.as_view()),
+    path('itemassigned/<str:pk>/', views.ItemAssignedView.as_view()),
+    path('itemsuseraccepted/', views.ItemsUserAcceptedView.as_view()),
+
+
     path('adminItem/', views.AdminItemView.as_view()),
 
     path('subcatByCat/<str:id>/', views.getSubcategoriesByCat.as_view()),

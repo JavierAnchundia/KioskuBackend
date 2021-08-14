@@ -324,6 +324,45 @@ class BodegaCiudadView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
 
+class BodegaItemView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        bodeItemObj = BodegaItem.objects.all()
+        serializer = BodegaItemSerializer(bodeItemObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = BodegaItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
+
+class BodegaItemViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return BodegaItem.objects.get(id=pk)
+        except BodegaItem.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        bodeItemObj = self.get_object(pk)
+        serializer = BodegaItemSerializer(bodeItemObj)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        bodeItemObj = self.get_object(pk)
+        serializer = BodegaItemSerializer(bodeItemObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        bodeItemObj = self.get_object(pk)
+        bodeItemObj.delete()
+        return Response(status=status.HTTP_200_OK)
 
 class BodegaViewSet(APIView):
     #permission_classes = (IsAuthenticated,)
@@ -420,6 +459,20 @@ class EstadoView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class EstadoIdView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, estado):
+        try:
+            return Estado.objects.filter(estado=estado)[0]
+        except Estado.DoesNotExist:
+            raise Http404
+
+    def get(self, request, estado, format=None):
+        stateObj = self.get_object(estado)
+        serializer = EstadoSerializer(stateObj)
+        return Response(serializer.data)
+
+
 class EstadoViewSet(APIView):
     #permission_classes = (IsAuthenticated,)
     def get_object(self, pk):
@@ -463,7 +516,11 @@ class ItemView(APIView):
 class ItemUnassignedView(APIView):
     #permission_classes = (IsAuthenticated,)
     def get(self, request, format=None):
-        itemsUnassigned = Item.objects.exclude(id__in=AdminItem.objects.all())
+        estado = Estado.objects.filter(estado='Por Evaluar')
+        adminItem = AdminItem.objects.all()
+
+        itemsUnassigned = Item.objects.exclude(id__in= adminItem.values_list("item", flat=True))\
+            .filter(estado__in=estado.values_list("id", flat=True))
         serializer = ItemSerializer(itemsUnassigned, many=True)
         return Response(serializer.data)
 
@@ -474,6 +531,35 @@ class ItemUnassignedView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ItemAssignedView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            adminItem = AdminItem.objects.filter(admin=pk)
+            return Item.objects.filter(id__in=adminItem.values_list("item", flat=True))
+        except Estado.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        itemsUnassigned = self.get_object(pk)
+        serializer = ItemEstadoSerializer(itemsUnassigned, many=True)
+        return Response(serializer.data)
+
+class ItemsUserAcceptedView(APIView):
+    # permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        estado = Estado.objects.filter(estado='Aceptado')
+        producto = Producto.objects.all()
+
+        # Esto esta filtrando a los items que no hayan sido usados para crear algun producto y tambien aquellos que tengan el estado como "Aceptado por parte del usuario"
+        itemsUserAccepted = Item.objects.exclude(id__in=producto.values_list("item", flat=True))\
+            .filter(estado__in=estado.values_list("id", flat=True))
+
+        serializer = ItemSerializer(itemsUserAccepted, many=True)
+        return Response(serializer.data)
+
+
+
 class AdminItemView(APIView):
     #permission_classes = (IsAuthenticated,)
     def get(self, request, format=None):
@@ -483,6 +569,7 @@ class AdminItemView(APIView):
 
     def post(self, request, format=None):
         serializer = AdminItemSerializer(data=request.data)
+        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -561,13 +648,13 @@ class ImagenItemViewSet(APIView):
     #permission_classes = (IsAuthenticated,)
     def get_object(self, pk):
         try:
-            return ImagenItem.objects.get(id=pk)
+            return ImagenItem.objects.filter(item=pk)
         except ImagenItem.DoesNotExist:
             raise Http404
 
     def get(self, request, pk, format=None):
         itemObj = self.get_object(pk)
-        serializer = ImagenItemSerializer(itemObj)
+        serializer = ImagenItemSerializer(itemObj,many=True)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
