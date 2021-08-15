@@ -20,7 +20,8 @@ class Membresia(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     tipo = models.CharField(max_length=20)
     pct_dscto = models.DecimalField(max_digits=5, decimal_places=2)
-    tarifa = models.DecimalField(max_digits=5, decimal_places=2)
+    tarifa = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    valorCredito = models.DecimalField(max_digits=5, decimal_places=2, default=1)
 
 # Modelo de usuarios
 
@@ -70,13 +71,15 @@ class User(AbstractBaseUser):
     staff = models.BooleanField(default=False)
     rol = models.CharField(max_length=10, choices=rol_choice, default=final)
     address = models.CharField(max_length=100)
-    saldo = models.DecimalField(max_digits=6, decimal_places=2)
+    saldo = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     provincia = models.ForeignKey(
         Provincia, on_delete=models.PROTECT, null=True, blank=True)
     ciudad = models.ForeignKey(
         Ciudad, on_delete=models.PROTECT, null=True, blank=True)
     membresia = models.ForeignKey(
         Membresia, on_delete=models.PROTECT, null=True, blank=True)
+    celular = models.CharField(max_length=10)
+    cedula = models.CharField(max_length=10)
 
     objects = UsuarioManager()
 
@@ -171,9 +174,10 @@ class AdminProducto(models.Model):
 
 class CarroCompras(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    usuario = models.OneToOneField(User, on_delete=models.PROTECT, unique=True)
+    usuario = models.ForeignKey(User, on_delete=models.PROTECT)
     subtotal = models.DecimalField(max_digits=8, decimal_places=2)
     totalProduct = models.IntegerField()
+    descuento = models.DecimalField(max_digits=8, decimal_places=2)
     estado = models.CharField(max_length=20)
 
 class CarroProducto(models.Model):
@@ -189,18 +193,19 @@ class MetodoPago(models.Model):
 class EstadoCompra(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     estado = models.CharField(max_length=20)
-    dateUpdated = models.DateField()
+    dateUpdated = models.DateField(auto_now=True)
     transportista = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 
 class Factura(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    dateCreated = models.DateField()
+    dateCreated = models.DateField(auto_now=True)
     metodoPago = models.ForeignKey(MetodoPago, on_delete=models.PROTECT)
     total = models.DecimalField(max_digits=8, decimal_places=2)
     costoEntrega = models.DecimalField(max_digits=8, decimal_places=2)
-    estado = models.CharField(max_length=20)
+    estado = models.ForeignKey(EstadoCompra, on_delete=models.SET_NULL, null=True)
     carro = models.ForeignKey(CarroCompras, on_delete=models.PROTECT)
-
+    detalle = models.CharField(max_length=50)
+    
 class Anuncio(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     dateCreated = models.DateField()
