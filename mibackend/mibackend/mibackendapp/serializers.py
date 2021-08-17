@@ -30,7 +30,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'saldo',
             'address',
             'provincia',
-            'ciudad'
+            'ciudad',
+            'cedula',
+            'celular',
+            'membresia'
         )
         extra_kwargs = {'password': {'write_only': True}}
 
@@ -49,7 +52,7 @@ class UserFullSerializer(serializers.ModelSerializer):
     class Meta:
             model = User
             fields = ('id', 'name', 'email', 'address', 'is_active', 'saldo',
-            'ciudad', 'provincia', 'membresia')
+            'ciudad', 'provincia', 'membresia', 'cedula', 'celular', 'rol')
 
 
 class CategoriaSerializer(serializers.ModelSerializer):
@@ -167,4 +170,13 @@ class ProductoFullSerializer(serializers.ModelSerializer):
 class AnuncioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Anuncio
+        fields = '__all__'
+
+
+class FacturaFullSerializer(serializers.ModelSerializer):
+    estadoCompra = serializers.CharField(source='estado.estado')
+    totalCompra = serializers.IntegerField(source='carro.totalProduct')
+    pago = serializers.CharField(source='metodoPago.tipo')
+    class Meta:
+        model = Factura
         fields = '__all__'

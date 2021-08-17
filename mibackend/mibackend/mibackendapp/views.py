@@ -1,4 +1,4 @@
-from django.db.models.expressions import Subquery
+from django.db.models.aggregates import Count, Sum
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .models import  * 
@@ -12,8 +12,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
-from django.db.models import Max
-
+from django.db.models import Max, F
+from django.utils import timezone
 # Create your views here.
 
 class CiudadView(APIView):
@@ -180,7 +180,6 @@ class UsuarioView(APIView):
         serializer = UserFullSerializer(usuarioObj)
         return Response(serializer.data)
     def put(self, request, pk, format = None):
-        print(request.data)
         usuarioObj = self.get_object(pk)
         serializer = UserProfileSerializer(usuarioObj, data=request.data, partial=True)
         if serializer.is_valid():
@@ -853,8 +852,222 @@ class AnuncioViewSet(APIView):
         anunObj.delete()
         return Response(status=status.HTTP_200_OK)
 
+class FacturaView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        factObj = Factura.objects.all().order_by('-id')
+        serializer = FacturaSerializer(factObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = FacturaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            productos = CarroProducto.objects.filter(carro=serializer.data['carro'])
+            updateProductStock(productos)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FacturaViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return Factura.objects.get(id=pk)
+        except Factura.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        factObj = self.get_object(pk)
+        serializer = FacturaSerializer(factObj)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        factObj = self.get_object(pk)
+        serializer = FacturaSerializer(factObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        factObj = self.get_object(pk)
+        factObj.delete()
+        return Response(status=status.HTTP_200_OK)
+
+class CarroComprasView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        cartObj = CarroCompras.objects.all()
+        serializer = CarroComprasSerializer(cartObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = CarroComprasSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CarroComprasViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return CarroCompras.objects.get(id=pk)
+        except CarroCompras.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        cartObj = self.get_object(pk)
+        serializer = CarroComprasSerializer(cartObj)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        cartObj = self.get_object(pk)
+        serializer = CarroComprasSerializer(cartObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        cartObj = self.get_object(pk)
+        cartObj.delete()
+        return Response(status=status.HTTP_200_OK)
+
+class CarroProductoView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        cartObj = CarroProducto.objects.all()
+        serializer = CarroProductoSerializer(cartObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = CarroProductoSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CarroProductoViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return CarroProducto.objects.get(id=pk)
+        except CarroProducto.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        cartObj = self.get_object(pk)
+        serializer = CarroProductoSerializer(cartObj)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        cartObj = self.get_object(pk)
+        serializer = CarroProductoSerializer(cartObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        cartObj = self.get_object(pk)
+        cartObj.delete()
+        return Response(status=status.HTTP_200_OK)
     
+class MetodoPagoView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        pagoObj = MetodoPago.objects.all()
+        serializer = MetodoPagoSerializer(pagoObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = MetodoPagoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MetodoPagoViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return MetodoPago.objects.get(id=pk)
+        except MetodoPago.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        pagoObj = self.get_object(pk)
+        serializer = MetodoPagoSerializer(pagoObj)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        pagoObj = self.get_object(pk)
+        serializer = MetodoPagoSerializer(pagoObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        pagoObj = self.get_object(pk)
+        pagoObj.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+class EstadoCompraView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        estObj = EstadoCompra.objects.all()
+        serializer = EstadoCompraSerializer(estObj, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = EstadoCompraSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EstadoCompraViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return EstadoCompra.objects.get(id=pk)
+        except EstadoCompra.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        estObj = self.get_object(pk)
+        serializer = EstadoCompraSerializer(estObj)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        estObj = self.get_object(pk)
+        serializer = EstadoCompraSerializer(estObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        estObj = self.get_object(pk)
+        estObj.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
 ### VISTAS ESPECIALES ##
+def updateProductStock(productos):
+    serializer = CarroProductoSerializer(productos, many=True)
+    for p in serializer.data:
+        print(p)
+        item = (Producto.objects.filter(id = p['producto']).values('item')[0])['item']
+        Item.objects.filter(id=item).update(cantidad=(F('cantidad') - int(p['cantidad'])))
 
 class getItemByUser(APIView):
     def get(self, request, id):
@@ -876,7 +1089,7 @@ class getSubcategoriesByCat(APIView):
 
 class getMostRecentProducts(APIView):
     def get(self, request):
-        prod = Producto.objects.all().order_by('-id')[:30]
+        prod = Producto.objects.filter(item__cantidad__gt=0).order_by('-id')[:30]
         serializer = ProductoFullSerializer(prod, many=True)
         imagen = ImagenProducto.objects.all()
         imgSerializer = ImagenProductoSerializer(imagen, many=True)
@@ -884,7 +1097,7 @@ class getMostRecentProducts(APIView):
 
 class getProductsByCategory(APIView):
     def get(self, request, id):
-        prod = Producto.objects.filter(categoria=id).order_by('-id')
+        prod = Producto.objects.filter(item__cantidad__gt=0).filter(categoria=id).order_by('-id')
         imagen = ImagenProducto.objects.filter(producto__categoria=id)
         imgSerializer = ImagenProductoSerializer(imagen, many=True)
         serializer = ProductoSerializer(prod, many=True)
@@ -892,7 +1105,7 @@ class getProductsByCategory(APIView):
  
 class getProductsBySubCategory(APIView):
     def get(self, request, pk):
-        prod = Producto.objects.filter(subcategoria=pk).order_by('-pk')
+        prod = Producto.objects.filter(item__cantidad__gt=0).filter(subcategoria=pk).order_by('-pk')
         imagenItem = ImagenProducto.objects.filter(producto__subcategoria=pk)
         imgSerializer = ImagenProductoSerializer(imagenItem, many=True)
         serializer = ProductoSerializer(prod, many=True)
@@ -942,4 +1155,30 @@ class getRecentItemsForCat(APIView):
                 products.append(id['mostrecent'])        
         qs2 = Producto.objects.filter(id__in=products)
         serializer = ProductoFullSerializer(qs2, many= True)
+        return Response(serializer.data)
+
+class getInvoiceByUser(APIView):
+    def get(self, request, pk):
+        qs = Factura.objects.filter(carro__usuario=pk)
+        serializer = FacturaFullSerializer(qs, many= True)
+        return Response(serializer.data)
+
+class getStatistics(APIView):
+    def get(self, request):
+        users = User.objects.aggregate(totalUsers=Count("id"))
+        orders = Factura.objects.filter(dateCreated__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)).aggregate(totalOrders = Count("id"))
+        submissions = Item.objects.aggregate(totalSubs=Count("id"))
+        pending = Factura.objects.filter(estado__estado="Por entregar").filter(dateCreated__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)).aggregate(totalPending=Count("id"))
+
+        return HttpResponse(json.dumps([users,orders, submissions, pending], cls=DjangoJSONEncoder))
+
+class getDailyTotalOrders(APIView):
+    def get(self, request):
+        orders = Factura.objects.filter(dateCreated__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)).values('dateCreated').annotate(count = Count('id')).order_by('dateCreated').values("dateCreated", "count")
+        return HttpResponse(json.dumps(list(orders), cls=DjangoJSONEncoder))
+
+class getRecentItems(APIView):
+    def get(self, request):
+        item = Item.objects.filter(cantidad__gt=0).order_by('-id')[:5]
+        serializer = ItemFullSerializer(item, many=True)
         return Response(serializer.data)

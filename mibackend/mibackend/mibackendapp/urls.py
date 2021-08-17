@@ -42,6 +42,16 @@ urlpatterns = [
     path('membresia/<str:pk>/', views.MembresiaViewSet.as_view()),
     path('anuncio/', views.AnuncioView.as_view()),
     path('anuncio/<str:pk>/', views.AnuncioViewSet.as_view()),
+    path('factura/', views.FacturaView.as_view()),
+    path('factura/<str:pk>/', views.FacturaViewSet.as_view()),
+    path('carro-compras/', views.CarroComprasView.as_view()),
+    path('carro-compras/<str:pk>/', views.CarroComprasViewSet.as_view()),
+    path('carro-producto/', views.CarroProductoView.as_view()),
+    path('carro-producto/<str:pk>/', views.CarroProductoViewSet.as_view()),
+    path('pago/', views.MetodoPagoView.as_view()),
+    path('pago/<str:pk>/', views.MetodoPagoViewSet.as_view()),
+    path('estado-compra/', views.EstadoCompraView.as_view()),
+    path('estado-compra/<str:pk>/', views.EstadoCompraViewSet.as_view()),
 
     path('itemsByUser/<str:id>/', views.getItemByUser.as_view()),
     path('itemunassigned/', views.ItemUnassignedView.as_view()),
@@ -57,7 +67,13 @@ urlpatterns = [
     path('productsBySubcat/<str:pk>/', views.getProductsBySubCategory.as_view()),
     path('citiesByProv/<str:pk>/', views.getCitiesByProv.as_view()),
     path('update-credits/<str:pk>/', views.updateCredits.as_view()),
-    path('recentItemsCat/', views.getRecentItemsForCat.as_view())
+    path('recentItemsCat/', views.getRecentItemsForCat.as_view()),
+    path('historial-compra/<str:pk>/', views.getInvoiceByUser.as_view()),
+    path('statistics/', views.getStatistics.as_view()),
+    path('dailyOrders/', views.getDailyTotalOrders.as_view()),
+    path('recentSubmissions/', views.getRecentItems.as_view()),
+
+
 ]
 
 
