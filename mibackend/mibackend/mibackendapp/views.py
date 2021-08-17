@@ -627,6 +627,20 @@ def convertImages(request):
                 images.append(data)
     return images
 
+def convertImagesProduct(request):
+    images = []
+    if len(request.data['imagesList']) >= 1:
+        for req in request.data['imagesList']:
+            if(req['imagen']):
+                format, imgstr = req['imagen'].split(';base64,')
+                ext = format.split('/')[-1]
+                imag = ContentFile(base64.b64decode(imgstr), name='img_'+ req['name'])
+                data = {
+                    'producto': req['producto'],
+                    'imagen': imag
+                }
+                images.append(data)
+    return images
 class ImagenItemView(APIView):
     #permission_classes = (IsAuthenticated,)
     def get(self, request, format=None):
@@ -686,6 +700,7 @@ class ProductoView(APIView):
 
     def post(self, request, format=None):
         serializer = ProductoSerializer(data=request.data)
+        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -735,7 +750,7 @@ class ImagenProductoView(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        data = convertImages(request)
+        data = convertImagesProduct(request)
         serializer = ImagenProductoSerializer(data=data, many=True)
         if serializer.is_valid():
             serializer.save()

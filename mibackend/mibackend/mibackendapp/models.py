@@ -151,7 +151,7 @@ class Producto(models.Model):
     peso = models.DecimalField(max_digits=8, decimal_places=2)
     precio = models.DecimalField(max_digits=8, decimal_places=2)
     descripcion = models.CharField(max_length=200)
-    dimensiones = models.CharField(max_length=50)
+    dimensiones = models.CharField(max_length=200)
     material = models.CharField(max_length=100)
     disponible = models.BooleanField(default=True)
     titulo = models.CharField(max_length=50)

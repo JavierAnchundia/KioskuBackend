@@ -33,6 +33,8 @@ urlpatterns = [
     path('estado/', views.EstadoView.as_view()),
     path('estado-id/<str:estado>/', views.EstadoIdView.as_view()),
     path('producto/<str:pk>/', views.ProductoViewSet.as_view()),
+    path('producto/', views.ProductoView.as_view()),
+
     path('img-producto/', views.ImagenProductoView.as_view()),
     path('img-producto/<str:pk>/', views.ImagenProductoViewSet.as_view()),
 
