@@ -113,6 +113,9 @@ class Estado(models.Model):
     estado = models.CharField(max_length=20)
     date_updated = models.DateField(auto_now=True)
 
+    def __str__(self):
+
+        return (self.estado + str(self.id))
 class Item(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE)

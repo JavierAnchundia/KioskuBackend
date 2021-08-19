@@ -422,7 +422,13 @@ class EstadoIdView(APIView):
     #permission_classes = (IsAuthenticated,)
     def get_object(self, estado):
         try:
-            return Estado.objects.filter(estado=estado)[0]
+            estados = Estado.objects.filter(estado=estado)
+            if(estados):
+
+                return estados[0]
+            else:
+                raise Http404
+
         except Estado.DoesNotExist:
             raise Http404
 
