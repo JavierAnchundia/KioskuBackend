@@ -99,48 +99,6 @@ class ProvinciaViewSet(APIView):
         provObj.delete()
         return Response(status=status.HTTP_200_OK)
 
-
-class MembresiaView(APIView):
-    #permission_classes = (IsAuthenticated,)
-    def get(self, request, format=None):
-        membObj = Membresia.objects.all()
-        serializer = MembresiaSerializer(membObj, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, format=None):
-        serializer = MembresiaSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class MembresiaViewSet(APIView):
-    #permission_classes = (IsAuthenticated,)
-    def get_object(self, pk):
-        try:
-            return Membresia.objects.get(id=pk)
-        except Membresia.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        membObj = self.get_object(pk)
-        serializer = MembresiaSerializer(membObj)
-        return Response(serializer.data)
-
-    def put(self, request, pk, format=None):
-        membObj = self.get_object(pk)
-        serializer = MembresiaSerializer(membObj, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        membObj = self.get_object(pk)
-        membObj.delete()
-        return Response(status=status.HTTP_200_OK)
-
 '''API PARA OBTENER Y EDITAR USUARIOS'''
 class UsuarioViewGet(APIView):
     #permission_classes = (IsAuthenticated,)
@@ -793,13 +751,13 @@ class ImagenProductoViewSet(APIView):
 
 class MembresiaView(APIView):
     def get(self, request, format=None):
-        memObj = Membresia.objects.all()
+        memObj = Membresia.objects.filter(active=True)
         serializer = MembresiaSerializer(memObj, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = MembresiaSerializer(data=request.data, many=True)
-        if serializer.is_valid():
+        serializer = MembresiaSerializer(data=request.data)
+        if serializer.is_valid():         
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -807,13 +765,13 @@ class MembresiaView(APIView):
 class MembresiaViewSet(APIView):
     def get_object(self, pk):
         try:
-            return Membresia.get(id=pk)
+            return Membresia.objects.get(id=pk)
         except Membresia.DoesNotExist:
             raise Http404
 
     def get(self, request, pk, format=None):
         memObj = self.get_object(pk)
-        serializer = MembresiaSerializer(memObj, many=True)
+        serializer = MembresiaSerializer(memObj)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
@@ -1182,7 +1140,7 @@ class getStatistics(APIView):
     def get(self, request):
         users = User.objects.aggregate(totalUsers=Count("id"))
         orders = Factura.objects.filter(dateCreated__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)).aggregate(totalOrders = Count("id"))
-        submissions = Item.objects.aggregate(totalSubs=Count("id"))
+        submissions = Item.objects.filter(estado__date_updated__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)).aggregate(totalSubs=Count("id"))
         pending = Factura.objects.filter(estado__estado="Por entregar").filter(dateCreated__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)).aggregate(totalPending=Count("id"))
 
         return HttpResponse(json.dumps([users,orders, submissions, pending], cls=DjangoJSONEncoder))
@@ -1196,4 +1154,11 @@ class getRecentItems(APIView):
     def get(self, request):
         item = Item.objects.filter(cantidad__gt=0).order_by('-id')[:5]
         serializer = ItemFullSerializer(item, many=True)
+        return Response(serializer.data)
+
+class getOrderDetail(APIView):
+    def get(self, request, pk):
+        productos = CarroProducto.objects.filter(carro=pk)
+        serializer = CarroProductoFullSerializer(productos, many= True)
+
         return Response(serializer.data)
