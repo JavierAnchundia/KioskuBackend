@@ -74,6 +74,8 @@ urlpatterns = [
     path('statistics/', views.getStatistics.as_view()),
     path('dailyOrders/', views.getDailyTotalOrders.as_view()),
     path('recentSubmissions/', views.getRecentItems.as_view()),
+    path('orderDetail/<str:pk>/', views.getOrderDetail.as_view()),
+
 
 
 ]

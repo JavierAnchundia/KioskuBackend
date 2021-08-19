@@ -180,3 +180,13 @@ class FacturaFullSerializer(serializers.ModelSerializer):
     class Meta:
         model = Factura
         fields = '__all__'
+    
+class CarroProductoFullSerializer(serializers.ModelSerializer):
+    nombre = serializers.CharField(source='producto.titulo')
+    precio = serializers.DecimalField(source='producto.precio', max_digits=5, decimal_places=2)
+    subtotal = serializers.DecimalField(source='carro.subtotal', max_digits=5, decimal_places=2)
+    
+
+    class Meta:
+        model = CarroProducto
+        fields = '__all__'
