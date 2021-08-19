@@ -22,10 +22,9 @@ class Membresia(models.Model):
     pct_dscto = models.DecimalField(max_digits=5, decimal_places=2)
     tarifa = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     valorCredito = models.DecimalField(max_digits=5, decimal_places=2, default=1)
+    active = models.BooleanField(default=True)
 
 # Modelo de usuarios
-
-
 class UsuarioManager(BaseUserManager):
     def create_user(self, email=None, name=None, password=None, rol=None):
 
@@ -121,7 +120,7 @@ class Item(models.Model):
     descripcion = models.CharField(max_length=250)
     cantidad = models.IntegerField()
     propietario = models.ForeignKey(User, on_delete=models.PROTECT)
-    entrega = models.CharField(max_length=30)
+    entrega = models.CharField(max_length=80)
     creditos = models.IntegerField(default=0)
     thumbnail = models.CharField(max_length=350, null=True, blank=True)
 
