@@ -353,3 +353,4 @@ mibackend/mibackend/static/media/items/*
 mibackend/mibackend/static/media/producto/*
 
 *.json
+mibackend/mibackend/static/media/banners/*
