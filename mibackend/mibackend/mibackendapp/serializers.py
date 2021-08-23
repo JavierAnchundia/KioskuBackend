@@ -71,14 +71,14 @@ class SubcategoriaSerializer(serializers.ModelSerializer):
 class BodegaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bodega
-        fields = '__all__'
+        fields = ('id', 'direccion', 'ciudad', 'is_active')
 
 class BodegaCiudadSerializer(serializers.ModelSerializer):
     ciudad_name = serializers.CharField(source='ciudad.nombre')
 
     class Meta:
         model = Bodega
-        fields = ('id', 'nombre', 'direccion', 'ciudad', 'ciudad_name')
+        fields = ('id', 'nombre', 'direccion', 'is_active', 'ciudad', 'ciudad_name')
 
 class CarroComprasSerializer(serializers.ModelSerializer):
     class Meta:
@@ -97,11 +97,12 @@ class ItemSerializer(serializers.ModelSerializer):
 
 class ItemEstadoSerializer(serializers.ModelSerializer):
     estado_name = serializers.CharField(source='estado.estado')
+    estado_date_updated = serializers.CharField(source='estado.date_updated')
 
     class Meta:
         model = Item
         fields = ('id', 'titulo', 'descripcion', 'cantidad', 'entrega', 'creditos', 'thumbnail',
-                  'estado', 'propietario', 'estado_name')
+                  'estado', 'propietario', 'estado_name','estado_date_updated')
 
 class MetodoPagoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -142,6 +143,31 @@ class BodegaItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = BodegaItem
         fields = '__all__'
+
+#class BodegaProductoSerializer(serializers.ModelSerializer):
+#    class Meta:
+#        model = BodegaProducto
+#        fields = '__all__'
+
+#class ProductoAndBodegaProductoSerializer(serializers.ModelSerializer):
+
+#    estado = serializers.CharField(source='producto.estado')
+#    item = serializers.CharField(source='producto.item')
+#    subcategoria = serializers.CharField(source='producto.subcategoria')
+#    categoria = serializers.CharField(source='producto.categoria')
+#    peso = serializers.CharField(source='producto.peso')
+#    precio = serializers.CharField(source='producto.precio')
+#    descripcion = serializers.CharField(source='producto.descripcion')
+#    dimensiones = serializers.CharField(source='producto.dimensiones')
+#    material = serializers.CharField(source='producto.material')
+#    disponible = serializers.CharField(source='producto.disponible')
+#    titulo = serializers.CharField(source='producto.titulo')
+#    thumbnail = serializers.CharField(source='producto.thumbnail')
+
+#   class Meta:
+#        model = BodegaProducto
+#        fields = ('id', 'producto', 'bodega', 'cantidad', 'estado', 'item', 'subcategoria', 'categoria',
+#                  'peso', 'precio', 'descripcion', 'dimensiones', 'material', 'disponible', 'titulo', 'thumbnail')
 
 class AdminProductoSerializer(serializers.ModelSerializer):
     class Meta:

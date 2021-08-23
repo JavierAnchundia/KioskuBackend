@@ -23,8 +23,13 @@ urlpatterns = [
     path('bodegasciudad/', views.BodegaCiudadView.as_view()),
     path('bodega-item/', views.BodegaItemView.as_view()),
     path('bodega-item/<str:pk>/', views.BodegaItemViewSet.as_view()),
+    #path('bodega-producto/', views.BodegaProductoView.as_view()),
+    #path('bodega-producto/<str:pk>/', views.BodegaProductoViewSet.as_view()),
 
     path('bodegasciudad/<str:pk>/', views.BodegaCiudadViewSet.as_view()),
+    path('bodegasciudadactivas/<str:pk>/', views.BodegaCiudadActivasViewSet.as_view()),
+    path('bodegasciudadactivas/', views.BodegaCiudadActivasView.as_view()),
+
     path('item/<str:pk>/', views.ItemViewSet.as_view()),
     path('item/', views.ItemView.as_view()),
     path('img-item/<str:pk>/', views.ImagenItemViewSet.as_view()),

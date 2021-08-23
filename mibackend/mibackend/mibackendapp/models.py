@@ -12,9 +12,13 @@ class Provincia(models.Model):
 class Ciudad(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     nombre = models.CharField(max_length=20)
+    siglas = models.CharField(max_length=5)
     provincia = models.ForeignKey(
         Provincia, on_delete=models.PROTECT, null=True, blank=True)
 
+    def __str__(self):
+
+        return (self.nombre + '-' + self.siglas + '-' + str(self.id))
 
 class Membresia(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -137,12 +141,14 @@ class Bodega(models.Model):
     nombre = models.CharField(max_length=100)
     direccion = models.CharField(max_length=100)
     ciudad = models.ForeignKey(Ciudad, on_delete=models.PROTECT)
+    is_active = models.BooleanField(default=True)
 
 class BodegaItem(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     item = models.ForeignKey(Item, on_delete=models.PROTECT)
     bodega = models.ForeignKey(Bodega, on_delete=models.PROTECT)
     cantidad = models.IntegerField()
+
 
 class Producto(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -158,6 +164,14 @@ class Producto(models.Model):
     disponible = models.BooleanField(default=True)
     titulo = models.CharField(max_length=50)
     thumbnail = models.CharField(max_length=350, null=True, blank=True)
+    cantidad = models.IntegerField()
+    bodega = models.ForeignKey(Bodega, on_delete=models.PROTECT)
+
+#class BodegaProducto(models.Model):
+ #   id = models.AutoField(primary_key=True, unique=True)
+ #  producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
+ #  bodega = models.ForeignKey(Bodega, on_delete=models.PROTECT)
+ #  cantidad = models.IntegerField()
 
 class ImagenProducto(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
