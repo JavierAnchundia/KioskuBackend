@@ -408,6 +408,9 @@ class BodegaViewSet(APIView):
 
         if serializer.is_valid():
             serializer.save()
+            Bodega.objects.filter(id=serializer.data['id']) \
+                .update(nombre=(Ciudad.objects.get(id=serializer.data['ciudad']).siglas + '-'
+                                + '{0:03}'.format(serializer.data['id'])))
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -737,6 +740,19 @@ class ProductoView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ProductoCategoriaSubcategoriaViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return Producto.objects.get(id=pk)
+        except Producto.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        prodObj = self.get_object(pk)
+        serializer = ProductoCategoriaSubcategoriaSerializer(prodObj)
+        return Response(serializer.data)
+
 class ProductoViewSet(APIView):
     #permission_classes = (IsAuthenticated,)
     def get_object(self, pk):
@@ -752,6 +768,7 @@ class ProductoViewSet(APIView):
 
     def put(self, request, pk, format=None):
         prodObj = self.get_object(pk)
+        print(request.data)
         serializer = ProductoSerializer(prodObj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()

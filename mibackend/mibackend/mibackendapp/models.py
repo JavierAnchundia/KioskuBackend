@@ -166,6 +166,7 @@ class Producto(models.Model):
     thumbnail = models.CharField(max_length=350, null=True, blank=True)
     cantidad = models.IntegerField()
     bodega = models.ForeignKey(Bodega, on_delete=models.PROTECT)
+    is_active = models.BooleanField(default=True)
 
 #class BodegaProducto(models.Model):
  #   id = models.AutoField(primary_key=True, unique=True)

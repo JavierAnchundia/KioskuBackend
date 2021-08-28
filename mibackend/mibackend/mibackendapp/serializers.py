@@ -193,6 +193,16 @@ class ProductoFullSerializer(serializers.ModelSerializer):
         model = Producto
         fields = '__all__'
 
+
+class ProductoCategoriaSubcategoriaSerializer(serializers.ModelSerializer):
+    subcategoria= SubcategoriaSerializer(required=False)
+    categoria = CategoriaSerializer(required=False)
+    bodega = BodegaCiudadSerializer(required=False)
+    class Meta:
+        model = Producto
+        fields = '__all__'
+
+
 class AnuncioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Anuncio
