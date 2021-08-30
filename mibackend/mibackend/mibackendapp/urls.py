@@ -80,7 +80,8 @@ urlpatterns = [
     path('dailyOrders/', views.getDailyTotalOrders.as_view()),
     path('recentSubmissions/', views.getRecentItems.as_view()),
     path('orderDetail/<str:pk>/', views.getOrderDetail.as_view()),
-
+    path('ordenes-pendientes/', views.getOrdersPending.as_view()),
+    path('deliveries/<str:pk>/', views.getMyDeliveries.as_view()),
 
 
 ]

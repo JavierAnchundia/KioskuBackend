@@ -1,4 +1,5 @@
 from django.db.models.aggregates import Count, Sum
+from rest_framework.fields import ImageField
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .models import  * 
@@ -650,7 +651,7 @@ def convertImages(request):
             if(req['imagen']):
                 format, imgstr = req['imagen'].split(';base64,')
                 ext = format.split('/')[-1]
-                imag = ContentFile(base64.b64decode(imgstr), name='img_'+ req['name'])
+                imag = ContentFile(base64.b64decode(imgstr), name='img_'+ req['name'] + '.jpg')
                 data = {
                     'item': req['item'],
                     'imagen': imag
@@ -665,13 +666,15 @@ def convertImagesProduct(request):
             if(req['imagen']):
                 format, imgstr = req['imagen'].split(';base64,')
                 ext = format.split('/')[-1]
-                imag = ContentFile(base64.b64decode(imgstr), name='img_'+ req['name'])
+                imag = ContentFile(base64.b64decode(imgstr), name='img_'+ req['name']+ '.jpg')
                 data = {
                     'producto': req['producto'],
                     'imagen': imag
                 }
                 images.append(data)
     return images
+
+    
 class ImagenItemView(APIView):
     #permission_classes = (IsAuthenticated,)
     def get(self, request, format=None):
@@ -731,7 +734,6 @@ class ProductoView(APIView):
 
     def post(self, request, format=None):
         serializer = ProductoSerializer(data=request.data)
-        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1111,9 +1113,7 @@ class EstadoCompraViewSet(APIView):
 def updateProductStock(productos):
     serializer = CarroProductoSerializer(productos, many=True)
     for p in serializer.data:
-        print(p)
-        item = (Producto.objects.filter(id = p['producto']).values('item')[0])['item']
-        Item.objects.filter(id=item).update(cantidad=(F('cantidad') - int(p['cantidad'])))
+        Producto.objects.filter(id = p['producto']).update(cantidad=(F('cantidad') - int(p['cantidad'])))
 
 class getItemByUser(APIView):
     def get(self, request, id):
@@ -1135,7 +1135,7 @@ class getSubcategoriesByCat(APIView):
 
 class getMostRecentProducts(APIView):
     def get(self, request):
-        prod = Producto.objects.filter(item__cantidad__gt=0).order_by('-id')[:30]
+        prod = Producto.objects.filter(cantidad__gt=0).order_by('-id')[:30]
         serializer = ProductoFullSerializer(prod, many=True)
         imagen = ImagenProducto.objects.all()
         imgSerializer = ImagenProductoSerializer(imagen, many=True)
@@ -1143,7 +1143,7 @@ class getMostRecentProducts(APIView):
 
 class getProductsByCategory(APIView):
     def get(self, request, id):
-        prod = Producto.objects.filter(item__cantidad__gt=0).filter(categoria=id).order_by('-id')
+        prod = Producto.objects.filter(cantidad__gt=0).filter(categoria=id).order_by('-id')
         imagen = ImagenProducto.objects.filter(producto__categoria=id)
         imgSerializer = ImagenProductoSerializer(imagen, many=True)
         serializer = ProductoSerializer(prod, many=True)
@@ -1151,7 +1151,7 @@ class getProductsByCategory(APIView):
  
 class getProductsBySubCategory(APIView):
     def get(self, request, pk):
-        prod = Producto.objects.filter(item__cantidad__gt=0).filter(subcategoria=pk).order_by('-pk')
+        prod = Producto.objects.filter(cantidad__gt=0).filter(subcategoria=pk).order_by('-pk')
         imagenItem = ImagenProducto.objects.filter(producto__subcategoria=pk)
         imgSerializer = ImagenProductoSerializer(imagenItem, many=True)
         serializer = ProductoSerializer(prod, many=True)
@@ -1181,7 +1181,6 @@ class getCitiesByProv(APIView):
 class updateCredits(APIView):
 
     def patch(self, request, pk):
-        print(request.data)
         model = User.objects.get(id=pk)
         data = {"saldo": model.saldo + int(request.data['creditos'])}
         serializer = UserProfileSerializer(model, data=data, partial=True)
@@ -1234,4 +1233,16 @@ class getOrderDetail(APIView):
         productos = CarroProducto.objects.filter(carro=pk)
         serializer = CarroProductoFullSerializer(productos, many= True)
 
+        return Response(serializer.data)
+
+class getOrdersPending(APIView):
+    def get(self, request):
+        ordenes = Factura.objects.filter(detalle="item").filter(estado__estado="Por Entregar").filter(estado__transportista__isnull=True)
+        serializer = FacturaFullSerializer(ordenes, many=True)
+        return Response(serializer.data)
+
+class getMyDeliveries(APIView):
+    def get(self, request, pk):
+        ordenes = Factura.objects.filter(detalle="item").filter(estado__transportista__id=pk)
+        serializer = FacturaFullSerializer(ordenes, many=True)
         return Response(serializer.data)
