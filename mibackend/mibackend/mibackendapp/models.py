@@ -63,7 +63,7 @@ class User(AbstractBaseUser):
     rol_choice = [
         (admin, 'admin'),
         (evaluador, 'evaluador'),
-        (final, 'final'),
+        (transportista, 'transportista'),
         (final, 'final')
     ]
     name = models.CharField(max_length=100, null=True, blank=True)
@@ -72,7 +72,7 @@ class User(AbstractBaseUser):
     password = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
     staff = models.BooleanField(default=False)
-    rol = models.CharField(max_length=10, choices=rol_choice, default=final)
+    rol = models.CharField(max_length=15, choices=rol_choice, default=final)
     address = models.CharField(max_length=100)
     saldo = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     provincia = models.ForeignKey(
@@ -83,7 +83,7 @@ class User(AbstractBaseUser):
         Membresia, on_delete=models.PROTECT, null=True, blank=True)
     celular = models.CharField(max_length=10)
     cedula = models.CharField(max_length=10)
-
+    fechaSuscripcion = models.DateField(null=True, blank=True)
     objects = UsuarioManager()
 
     USERNAME_FIELD = 'email'
@@ -209,7 +209,7 @@ class MetodoPago(models.Model):
 class EstadoCompra(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     estado = models.CharField(max_length=20)
-    dateUpdated = models.DateField(auto_now=True)
+    dateUpdated = models.DateTimeField(default=None, null=True, blank=True)
     transportista = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 
 class Factura(models.Model):
