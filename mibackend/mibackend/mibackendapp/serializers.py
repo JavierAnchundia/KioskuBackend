@@ -33,7 +33,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'ciudad',
             'cedula',
             'celular',
-            'membresia'
+            'membresia',
+            'fechaSuscripcion'
         )
         extra_kwargs = {'password': {'write_only': True}}
 
@@ -52,7 +53,7 @@ class UserFullSerializer(serializers.ModelSerializer):
     class Meta:
             model = User
             fields = ('id', 'name', 'email', 'address', 'is_active', 'saldo',
-            'ciudad', 'provincia', 'membresia', 'cedula', 'celular', 'rol')
+            'ciudad', 'provincia', 'membresia', 'cedula', 'celular', 'rol', 'fechaSuscripcion')
 
 
 class CategoriaSerializer(serializers.ModelSerializer):
@@ -201,8 +202,12 @@ class AnuncioSerializer(serializers.ModelSerializer):
 
 class FacturaFullSerializer(serializers.ModelSerializer):
     estadoCompra = serializers.CharField(source='estado.estado')
+    direccion = serializers.CharField(source='carro.usuario.address')
+    ciudad = serializers.CharField(source='carro.usuario.ciudad.nombre')
     totalCompra = serializers.IntegerField(source='carro.totalProduct')
     pago = serializers.CharField(source='metodoPago.tipo')
+    comprador = serializers.CharField(source='carro.usuario.name')
+    updated = serializers.DateTimeField(source='estado.dateUpdated')
     class Meta:
         model = Factura
         fields = '__all__'
