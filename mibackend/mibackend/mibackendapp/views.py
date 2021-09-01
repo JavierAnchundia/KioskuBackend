@@ -804,7 +804,8 @@ class ImagenProductoView(APIView):
         serializer = ImagenProductoSerializer(data=data, many=True)
         if serializer.is_valid():
             serializer.save()
-            Producto.objects.filter(id=serializer.data[0]['producto']).update(thumbnail=serializer.data[0]['imagen'])
+            if(data):
+                Producto.objects.filter(id=serializer.data[0]['producto']).update(thumbnail=serializer.data[0]['imagen'])
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -840,6 +841,37 @@ class ImagenProductoViewSet(APIView):
         prodObj.delete()
         return Response(status=status.HTTP_200_OK)
 
+class ImagenIndividualProductoViewSet(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get_object(self, pk):
+        try:
+            return ImagenProducto.objects.get(id=pk)
+        except ImagenProducto.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        prodObj = self.get_object(pk)
+        serializer = ImagenProductoSerializer(prodObj)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        prodObj = self.get_object(pk)
+        serializer = ImagenProductoSerializer(prodObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        prodObj = self.get_object(pk)
+        serializer = ImagenProductoSerializer(prodObj)
+        if(serializer['imagen'].value is not None):
+            path = serializer['imagen'].value[7:]
+            default_storage.delete(path)
+        else:
+            return Response(status=status.HTTP_200_OK)
+        prodObj.delete()
+        return Response(status=status.HTTP_200_OK)
 
 class MembresiaView(APIView):
     def get(self, request, format=None):
@@ -1012,9 +1044,40 @@ class CarroProductoView(APIView):
         serializer = CarroProductoSerializer(data=request.data, many=True)
         if serializer.is_valid():
             serializer.save()
+            calcularTarifaEntrega(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+def calcularTarifaEntrega(carroProductoList):
+
+    tarifa_total = 0
+    tarifa_entrega = TarifaEntregar.objects.all().first()
+
+    for p in carroProductoList:
+        print(p)
+
+        ciudad_bodega = Ciudad.objects.get(id=Bodega.objects.get(id=Producto.objects.get(id=p['producto']).bodega).ciudad)
+        provincia_bodega = Provincia.objects.get(id=ciudad_bodega.provincia)
+
+        usuario = User.objects.get(id=CarroCompras.objects.get(id=p['carro']).usuario)
+        ciudad_usuario = Ciudad.objects.get(id=usuario.ciudad)
+        provincia_usuario = Provincia.objects.get(id=ciudad_bodega.provincia)
+
+
+        carroCompra = CarroCompras.objects.get(id=p['carro'])
+
+        if (ciudad_bodega and provincia_bodega and ciudad_usuario and provincia_usuario and tarifa_entrega):
+            if(ciudad_bodega.id == ciudad_usuario.id):
+                tarifa_total += tarifa_entrega.mismaCiudad
+            elif(provincia_bodega.id == provincia_usuario.id):
+                tarifa_total += tarifa_entrega.difCiudadMismaProvincia
+            else:
+                tarifa_total += tarifa_entrega.difProvincia
+
+        else:
+            raise Http404
+
+    carroCompra.update(costoEntrega=tarifa_total)
 
 class CarroProductoViewSet(APIView):
     #permission_classes = (IsAuthenticated,)
@@ -1125,6 +1188,26 @@ class EstadoCompraViewSet(APIView):
         estObj.delete()
         return Response(status=status.HTTP_200_OK)
 
+
+class TarifaEntregaView(APIView):
+    #permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        tarifaEntregaObj = TarifaEntrega.objects.all()
+        if(tarifaEntregaObj):
+            serializer = TarifaEntregaSerializer(tarifaEntregaObj[0])
+            return Response(serializer.data)
+        else:
+            raise Http404
+
+
+    def put(self, request, format=None):
+        tarifaEntregaObj = self.get()
+
+        serializer = TarifaEntregaSerializer(tarifaEntregaObj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 ### VISTAS ESPECIALES ##
 def updateProductStock(productos):

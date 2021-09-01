@@ -7,5 +7,5 @@ from .models import *
 myModels = [Ciudad, Provincia, Membresia, User, Bodega, CarroCompras, Categoria, Subcategoria,
             Estado, Item, MetodoPago, Producto, ImagenProducto, ImagenItem,
             Factura, EstadoCompra, CarroProducto, BodegaItem, AdminProducto, AdminItem,
-            Anuncio]  # iterable list
+            Anuncio, TarifaEntrega]  # iterable list
 admin.site.register(myModels)

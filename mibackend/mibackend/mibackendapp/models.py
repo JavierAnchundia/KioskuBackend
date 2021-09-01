@@ -168,6 +168,14 @@ class Producto(models.Model):
     bodega = models.ForeignKey(Bodega, on_delete=models.PROTECT)
     is_active = models.BooleanField(default=True)
 
+class TarifaEntrega(models.Model):
+
+    id = models.AutoField(primary_key=True, unique=True)
+    mismaCiudad = models.DecimalField(max_digits=8, decimal_places=2)
+    difCiudadMismaProvincia = models.DecimalField(max_digits=8, decimal_places=2)
+    difProvincia = models.DecimalField(max_digits=8, decimal_places=2)
+
+
 #class BodegaProducto(models.Model):
  #   id = models.AutoField(primary_key=True, unique=True)
  #  producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
@@ -196,6 +204,7 @@ class CarroCompras(models.Model):
     totalProduct = models.IntegerField()
     descuento = models.DecimalField(max_digits=8, decimal_places=2)
     estado = models.CharField(max_length=20)
+    costoEntrega = models.DecimalField(max_digits=8, decimal_places=2)
 
 class CarroProducto(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -218,7 +227,7 @@ class Factura(models.Model):
     dateCreated = models.DateField(auto_now=True)
     metodoPago = models.ForeignKey(MetodoPago, on_delete=models.PROTECT)
     total = models.DecimalField(max_digits=8, decimal_places=2)
-    costoEntrega = models.DecimalField(max_digits=8, decimal_places=2)
+    #costoEntrega = models.DecimalField(max_digits=8, decimal_places=2)
     estado = models.ForeignKey(EstadoCompra, on_delete=models.SET_NULL, null=True)
     carro = models.ForeignKey(CarroCompras, on_delete=models.PROTECT)
     detalle = models.CharField(max_length=50)

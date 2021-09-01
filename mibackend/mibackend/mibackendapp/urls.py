@@ -41,8 +41,12 @@ urlpatterns = [
     path('producto/', views.ProductoView.as_view()),
     path('producto-categoria-subcategoria/<str:pk>/', views.ProductoCategoriaSubcategoriaViewSet.as_view()),
 
+    path('tarifa-entrega/', views.TarifaEntregaView.as_view()),
+
     path('img-producto/', views.ImagenProductoView.as_view()),
     path('img-producto/<str:pk>/', views.ImagenProductoViewSet.as_view()),
+    path('img-producto-individual/<str:pk>/', views.ImagenIndividualProductoViewSet.as_view()),
+
 
     path('shopping-cart/', views.createCarroCompras.as_view()),
     path('shopping-cart/<str:pk>/', views.getCarroByUser.as_view()),

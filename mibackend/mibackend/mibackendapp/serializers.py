@@ -91,6 +91,11 @@ class EstadoSerializer(serializers.ModelSerializer):
         model = Estado
         fields = '__all__'
 
+class TarifaEntregaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TarifaEntrega
+        fields = '__all__'
+
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
