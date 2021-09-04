@@ -223,6 +223,7 @@ class FacturaFullSerializer(serializers.ModelSerializer):
     pago = serializers.CharField(source='metodoPago.tipo')
     comprador = serializers.CharField(source='carro.usuario.name')
     updated = serializers.DateTimeField(source='estado.dateUpdated')
+    transportista = serializers.CharField(source='estado.transportista.name', required=False)
     class Meta:
         model = Factura
         fields = '__all__'
