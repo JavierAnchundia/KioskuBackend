@@ -637,6 +637,7 @@ class ItemViewSet(APIView):
         imagenItem = ImagenItem.objects.filter(item=pk)
         serializer = ImagenItemSerializer(imagenItem, many=True)
         for ser in serializer.data:
+            print(ser)
             if(ser['imagen'] is not None):
                 path = ser['imagen'][7:]
                 default_storage.delete(path)
@@ -917,22 +918,22 @@ class AnuncioView(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = AnuncioSerializer(data=request.data)
+        serializer = AnuncioSerializer(data=request.data, many=True)
         if serializer.is_valid():
-            serializer.save() 
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class AnuncioViewSet(APIView):
     def get_object(self, pk):
         try:
-            return Anuncio.objects.get(id=pk)
+            return Anuncio.get(id=pk)
         except Anuncio.DoesNotExist:
             raise Http404
 
     def get(self, request, pk, format=None):
         anunObj = self.get_object(pk)
-        serializer = AnuncioSerializer(anunObj)
+        serializer = AnuncioSerializer(anunObj, many=True)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
@@ -945,18 +946,14 @@ class AnuncioViewSet(APIView):
 
     def delete(self, request, pk, format=None):
         anunObj = self.get_object(pk)
-        ser = AnuncioSerializer(anunObj);
-        if(ser.data['banner'] is not None):
-            path = ser.data['banner'][7:]
-            default_storage.delete(path)
         anunObj.delete()
         return Response(status=status.HTTP_200_OK)
 
 class FacturaView(APIView):
     #permission_classes = (IsAuthenticated,)
     def get(self, request, format=None):
-        factObj = Factura.objects.filter(detalle='item')
-        serializer = FacturaFullSerializer(factObj, many=True)
+        factObj = Factura.objects.all().order_by('-id')
+        serializer = FacturaSerializer(factObj, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
@@ -1054,33 +1051,33 @@ class CarroProductoView(APIView):
 def calcularTarifaEntrega(carroProductoList):
 
     tarifa_total = 0
-    tarifa_entrega = TarifaEntrega.objects.all().first()
+    tarifa_entrega = TarifaEntregar.objects.all().first()
 
     for p in carroProductoList:
+        print(p)
 
-        ciudad_bodega = Ciudad.objects.get(id=Bodega.objects.get(id=Producto.objects.get(id=p['producto']).bodega.id).ciudad.id)
-        provincia_bodega = Provincia.objects.get(id=ciudad_bodega.provincia.id)
+        ciudad_bodega = Ciudad.objects.get(id=Bodega.objects.get( id=Producto.objects.get(id=p['producto']).bodega).ciudad)
+        provincia_bodega = Provincia.objects.get(id=ciudad_bodega.provincia)
 
-        usuario = User.objects.get(id=CarroCompras.objects.get(id=p['carro']).usuario.id)
-        ciudad_usuario = Ciudad.objects.get(id=usuario.ciudad.id)
-        provincia_usuario = Provincia.objects.get(id=ciudad_bodega.provincia.id)
+        usuario = User.objects.get(id=CarroCompras.objects.get(id=p['carro']).usuario)
+        ciudad_usuario = Ciudad.objects.get(id=usuario.ciudad)
+        provincia_usuario = Provincia.objects.get(id=ciudad_bodega.provincia)
 
 
-        carroCompra = CarroCompras.objects.filter(id=p['carro'])
+        carroCompra = CarroCompras.objects.get(id=p['carro'])
 
         if (ciudad_bodega and provincia_bodega and ciudad_usuario and provincia_usuario and tarifa_entrega):
             if(ciudad_bodega.id == ciudad_usuario.id):
-                tarifa_total += tarifa_entrega.mismaCiudad * int(p['cantidad'])
+                tarifa_total += tarifa_entrega.mismaCiudad
             elif(provincia_bodega.id == provincia_usuario.id):
-                tarifa_total += tarifa_entrega.difCiudadMismaProvincia * int(p['cantidad'])
+                tarifa_total += tarifa_entrega.difCiudadMismaProvincia
             else:
-                tarifa_total += tarifa_entrega.difProvincia * int(p['cantidad'])
+                tarifa_total += tarifa_entrega.difProvincia
 
         else:
             raise Http404
 
-    carroCompra.update(costoEntrega = tarifa_total)
-    print('success')
+    carroCompra.update(costoEntrega=tarifa_total)
 
 class CarroProductoViewSet(APIView):
     #permission_classes = (IsAuthenticated,)
@@ -1194,22 +1191,30 @@ class EstadoCompraViewSet(APIView):
 
 class TarifaEntregaView(APIView):
     #permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        try:
+            return TarifaEntrega.objects.all()[0]
+        except EstadoCompra.DoesNotExist:
+            raise Http404
+
     def get(self, request, format=None):
-        tarifaEntregaObj = TarifaEntrega.objects.all()
+        tarifaEntregaObj = self.get_object()
         if(tarifaEntregaObj):
-            serializer = TarifaEntregaSerializer(tarifaEntregaObj[0])
+            serializer = TarifaEntregaSerializer(tarifaEntregaObj)
+
             return Response(serializer.data)
         else:
             raise Http404
 
 
     def put(self, request, format=None):
-        tarifaEntregaObj = self.get()
+        tarifaEntregaObj = self.get_object()
 
         serializer = TarifaEntregaSerializer(tarifaEntregaObj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 ### VISTAS ESPECIALES ##

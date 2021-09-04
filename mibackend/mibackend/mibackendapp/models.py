@@ -204,7 +204,7 @@ class CarroCompras(models.Model):
     totalProduct = models.IntegerField()
     descuento = models.DecimalField(max_digits=8, decimal_places=2)
     estado = models.CharField(max_length=20)
-    costoEntrega = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    costoEntrega = models.DecimalField(max_digits=8, decimal_places=2)
 
 class CarroProducto(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -234,7 +234,7 @@ class Factura(models.Model):
     
 class Anuncio(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    dateCreated = models.DateTimeField()
+    dateCreated = models.DateField()
     banner = models.ImageField(upload_to='banners', max_length=250, null=True, blank=True)
     titulo = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=250)
