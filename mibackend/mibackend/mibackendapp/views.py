@@ -1194,22 +1194,30 @@ class EstadoCompraViewSet(APIView):
 
 class TarifaEntregaView(APIView):
     #permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        try:
+            return TarifaEntrega.objects.all()[0]
+        except EstadoCompra.DoesNotExist:
+            raise Http404
+
     def get(self, request, format=None):
-        tarifaEntregaObj = TarifaEntrega.objects.all()
+        tarifaEntregaObj = self.get_object()
         if(tarifaEntregaObj):
-            serializer = TarifaEntregaSerializer(tarifaEntregaObj[0])
+            serializer = TarifaEntregaSerializer(tarifaEntregaObj)
+
             return Response(serializer.data)
         else:
             raise Http404
 
 
     def put(self, request, format=None):
-        tarifaEntregaObj = self.get()
+        tarifaEntregaObj = self.get_object()
 
         serializer = TarifaEntregaSerializer(tarifaEntregaObj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 ### VISTAS ESPECIALES ##

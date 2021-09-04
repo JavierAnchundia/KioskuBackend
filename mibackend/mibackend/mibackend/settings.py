@@ -15,7 +15,14 @@ SECRET_KEY = 'django-insecure-g2pgind^su1j^4x98&(!jeh63!ox28u!sr_6o#l!_0ejm%1#w(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+
+"127.0.0.1",
+    "laptop-g75b5rug",
+    "192.168.100.222",
+    "localhost"
+
+]
 
 #Cors
 CORS_ORIGIN_ALLOW_ALL = True
@@ -101,7 +108,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'midatabase',
-        'USER': 'root',
+        'USER': 'djangouser',
         'PASSWORD': 'rootuser',
         'HOST': 'localhost',
         'PORT': '3306',
