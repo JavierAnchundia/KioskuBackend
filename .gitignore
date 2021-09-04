@@ -354,4 +354,3 @@ mibackend/mibackend/static/media/producto/*
 
 *.json
 mibackend/mibackend/static/media/banners/*
-mibackend/Lib/site-packages/MySQLdb/_mysql.cp38-win_amd64.pyd
