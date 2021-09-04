@@ -222,6 +222,7 @@ class EstadoCompra(models.Model):
     dateUpdated = models.DateTimeField(default=None, null=True, blank=True)
     transportista = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 
+
 class Factura(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     dateCreated = models.DateField(auto_now=True)
